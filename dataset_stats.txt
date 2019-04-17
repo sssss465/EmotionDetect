@@ -1,0 +1,1 @@
+sr=22050 , mean_length=67196.44305555556, min_length=29696, max_length=110615

@@ -16,7 +16,11 @@ higher number of hidden layers and nodes in both DNN-based
 and RNN-based systems. The reason is most probably overfitting caused by data insufficiency.
 '''
 
+SR = 22050
+WAV_LENGTH = 110615
+
 def get_dataset_stats():
+    output = open('dataset_stats.txt', 'w')
     rootdir = "datasets/RAVDESS"
     sr, total, mean_length, min_length, max_length = 0, 0, 0, 0, 0
     length = []
@@ -34,7 +38,24 @@ def get_dataset_stats():
     min_length = min(length)
     max_length = max(length)
     print(f"\nFinish Processing Dataset, sr={sr} , mean_length={mean_length}, min_length={min_length}, max_length={max_length}")
+    output.write(f"sr={sr} , mean_length={mean_length}, min_length={min_length}, max_length={max_length}")
     return sr, mean_length, min_length, max_length
+
+def preprocess_dataset():
+    rootdir = "datasets/Preprocessed"
+    subdirs = list(filter(lambda x: "Actor" in x, os.listdir(rootdir)))
+    for i, subdir in enumerate(subdirs):
+        files = list(filter(lambda x: "wav" in x, os.listdir(f"{rootdir}/{subdir}")))
+        for j, file_ in enumerate(files):
+            print(f"\rProcessing Actor {(i+1):02d}/{len(subdirs)}, File {(j+1):02d}/{len(files)}", end="")
+            audio = librosa.load(f"{rootdir}/{subdir}/{file_}")
+            audio[0] = librosa.effects.trim(audio[0])
+            '''
+            todo: add padding
+            '''
+            length.append(len(librosa.effects.trim(audio[0])[0]))
+    print(f"\nFinish Processing Dataset")
+    return
 
 def get_mfcc(audio, hop=20, window=12):
     return
