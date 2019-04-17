@@ -44,5 +44,5 @@ def get_pitch(audio, windows=12):
 
     
 
-
-get_dataset_stats()
+if __name__ == '__main__':
+    print(get_dataset_stats())
