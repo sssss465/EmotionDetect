@@ -1,1 +1,1 @@
-sr=22050 , mean_length=67196.44305555556, min_length=29696, max_length=110615
+mean_length=146328, min_length=62464, max_length=240765

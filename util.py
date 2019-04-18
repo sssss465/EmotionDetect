@@ -1,5 +1,6 @@
 import os, librosa
 import numpy as np
+import sklearn
 
 '''
 For low-level acoustic features, we extract 32 features for
@@ -18,30 +19,31 @@ higher number of hidden layers and nodes in both DNN-based
 and RNN-based systems. The reason is most probably overfitting caused by data insufficiency.
 '''
 
-SR = 22050
-WAV_LENGTH = 110615
+SR = 48000
+WAV_LENGTH = 240765
+HOP = 0.20
+HOP_LENGTH = int(HOP*SR)
+LABELS = {1:"neutral", 2:"calm", 3:"happy", 4:"sad", 5:"angry", 6:"fearful", 7:"disgust", 8:"surprised"}
 
 def get_dataset_stats():
     output = open('dataset_stats.txt', 'w')
     rootdir = "datasets/RAVDESS"
-    sr, total, mean_length, min_length, max_length = 0, 0, 0, 0, 0
+    total, mean_length, min_length, max_length = 0, 0, 0, 0
     length = []
     subdirs = list(filter(lambda x: "Actor" in x, os.listdir(rootdir)))
     for i, subdir in enumerate(subdirs):
         files = list(filter(lambda x: "wav" in x, os.listdir(f"{rootdir}/{subdir}")))
         for j, file_ in enumerate(files):
             print(f"\rProcessing Actor {(i+1):02d}/{len(subdirs)}, File {(j+1):02d}/{len(files)}", end="")
-            audio = librosa.load(f"{rootdir}/{subdir}/{file_}")
-            if sr == 0:
-                sr = audio[1]
-            length.append(len(librosa.effects.trim(audio[0])[0]))
+            audio = librosa.load(f"{rootdir}/{subdir}/{file_}", sr=SR)[0]
+            length.append(len(librosa.effects.trim(audio)[0]))
             total += 1
-    mean_length = sum(length)/len(length)
+    mean_length = sum(length)//len(length)
     min_length = min(length)
     max_length = max(length)
-    print(f"\nFinish Processing Dataset, sr={sr} , mean_length={mean_length}, min_length={min_length}, max_length={max_length}")
-    output.write(f"sr={sr} , mean_length={mean_length}, min_length={min_length}, max_length={max_length}")
-    return sr, mean_length, min_length, max_length
+    print(f"\nFinish Processing Dataset, mean_length={mean_length}, min_length={min_length}, max_length={max_length}")
+    output.write(f"mean_length={mean_length}, min_length={min_length}, max_length={max_length}")
+    return mean_length, min_length, max_length
 
 def preprocess_dataset():
     rootdir = "datasets/RAVDESS"
@@ -51,22 +53,37 @@ def preprocess_dataset():
         files = list(filter(lambda x: "wav" in x, os.listdir(f"{rootdir}/{subdir}")))
         for j, file_ in enumerate(files):
             print(f"\rProcessing Actor {(i+1):02d}/{len(subdirs)}, File {(j+1):02d}/{len(files)}", end="")
-            audio = librosa.load(f"{rootdir}/{subdir}/{file_}")[0]
+            audio = librosa.load(f"{rootdir}/{subdir}/{file_}", sr=SR)[0]
             audio = librosa.effects.trim(audio)[0]
             padding = WAV_LENGTH - len(audio)
             audio = np.concatenate((np.zeros(padding//2), audio, np.zeros(padding-padding//2)))
             assert len(audio) == WAV_LENGTH
-            librosa.output.write_wav(f"{outputdir}/{file_}", audio, SR)
+            librosa.output.write_wav(f"{outputdir}/{file_}", audio, sr=SR)
     print(f"\nFinish Processing Dataset")
     return
 
-def get_mfcc(audio, hop=20, window=12):
-    return
+def get_feature_vector_and_label(file_name):
+    label = int(file_name[:-4].split("-")[2])
+    audio = librosa.load(f"datasets/Preprocessed/{file_name}", sr=SR)[0]
+    mfcc = librosa.feature.mfcc(y=audio, sr=SR, n_mfcc=13, hop_length=HOP_LENGTH)
+    return label, mfcc
 
-def get_pitch(audio, windows=12):
-    return
-
-    
+def extract_features_and_labels():
+    rootdir="datasets/Preprocessed"
+    files = list(filter(lambda x: "wav" in x, os.listdir("datasets/Preprocessed")))
+    features = []
+    labels = []
+    for i, file_ in enumerate(files):
+        print(f"\rProcessing file {(i+1)}/{len(files)}", end="")
+        label, feature = get_feature_vector_and_label(file_)
+        labels.append(label)
+        features.append(feature)
+    labels = np.array(labels)
+    features = np.array(features)
+    print(labels.shape)
+    print(features.shape)
+    print(f"\nFinish Extracting Features")
+    return labels, features
 
 if __name__ == '__main__':
-    print(preprocess_dataset())
+    extract_features_and_labels()
