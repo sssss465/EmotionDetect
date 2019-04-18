@@ -1,4 +1,6 @@
 import os, librosa
+import numpy as np
+
 '''
 For low-level acoustic features, we extract 32 features for
 every frame: F0 (pitch), voice probability, zero-crossing rate,
@@ -42,18 +44,19 @@ def get_dataset_stats():
     return sr, mean_length, min_length, max_length
 
 def preprocess_dataset():
-    rootdir = "datasets/Preprocessed"
+    rootdir = "datasets/RAVDESS"
+    outputdir = "datasets/Preprocessed"
     subdirs = list(filter(lambda x: "Actor" in x, os.listdir(rootdir)))
     for i, subdir in enumerate(subdirs):
         files = list(filter(lambda x: "wav" in x, os.listdir(f"{rootdir}/{subdir}")))
         for j, file_ in enumerate(files):
             print(f"\rProcessing Actor {(i+1):02d}/{len(subdirs)}, File {(j+1):02d}/{len(files)}", end="")
-            audio = librosa.load(f"{rootdir}/{subdir}/{file_}")
-            audio[0] = librosa.effects.trim(audio[0])
-            '''
-            todo: add padding
-            '''
-            length.append(len(librosa.effects.trim(audio[0])[0]))
+            audio = librosa.load(f"{rootdir}/{subdir}/{file_}")[0]
+            audio = librosa.effects.trim(audio)[0]
+            padding = WAV_LENGTH - len(audio)
+            audio = np.concatenate((np.zeros(padding//2), audio, np.zeros(padding-padding//2)))
+            assert len(audio) == WAV_LENGTH
+            librosa.output.write_wav(f"{outputdir}/{file_}", audio, SR)
     print(f"\nFinish Processing Dataset")
     return
 
@@ -66,4 +69,4 @@ def get_pitch(audio, windows=12):
     
 
 if __name__ == '__main__':
-    print(get_dataset_stats())
+    print(preprocess_dataset())
