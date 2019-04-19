@@ -1,1 +1,0 @@
-mean_length=146328, min_length=62464, max_length=240765
