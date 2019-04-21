@@ -66,26 +66,25 @@ def extract_features():
             labels[actor_idx*60+file_idx] = int(file_name[:-4].split("-")[2])
             labels_onehot[actor_idx*60+file_idx, int(file_name[:-4].split("-")[2])-1] = 1
             features[actor_idx*60+file_idx] = get_feature_vector(f"Actor_{(actor_idx+1):02d}/{file_name}", length)
-    print(labels_onehot[0])
     print("Finish Extracting Features")
-    return labels, features
-
-def shuffle_labels_and_features(labels, features):
-    assert len(labels) == len(features)
-    rand = np.arange(len(labels))
-    np.random.shuffle(rand)
-    return labels[rand], features[rand]
+    return features, labels, labels_onehot
 
 def init():
     if "dataset_stats.h5" not in os.listdir():
         print("Getting Dataset Statistics")
         length, labels = get_dataset_stats()
-        f = h5py.File("dataset_stats.h5", "w")
-        f.create_dataset(name="sample_length", data=length, dtype="int32")
-        f.create_dataset(name="labels", data=labels, dtype="uint8")
+        with h5py.File("dataset_stats.h5", "w") as f:
+            f.create_dataset(name="sample_length", data=length)
+            f.create_dataset(name="labels", data=labels)
         print("Dataset Statistics Stored to /dataset_stats.h5")
     if "features.h5" not in os.listdir():
-        extract_features()
-
+        print("Extracting Features")
+        [features, labels, labels_onehot] = extract_features()
+        with h5py.File("features.h5", "w") as f:
+            f.create_dataset(name="features", data=features)
+            f.create_dataset(name="labels", data=labels)
+            f.create_dataset(name="labels_onehot", data=labels_onehot)
+        print("Features Extracted")
+        
 if __name__ == '__main__':
     init()
