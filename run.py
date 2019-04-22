@@ -10,7 +10,7 @@ utils.init()
 
 f = h5py.File("mfcc_svm.h5", "w")
 
-for n_mfcc in range(5, 36):
+for n_mfcc in range(1000, 1001):
     print(n_mfcc)
     features, labels, e = utils.extract_features(n_mfcc, flatten=True)
     for i in range(10):
