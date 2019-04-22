@@ -8,7 +8,7 @@ utils.init()
 
 # accuracy based on n_mfcc
 
-f = h5py.File("mfcc_svm.h5", "w")
+f = h5py.File("outputs/mfcc_svm.h5", "w")
 
 for n_mfcc in range(1, 51):
     print(n_mfcc)
