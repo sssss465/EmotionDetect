@@ -91,6 +91,8 @@ class cnn:
         if not os.path.isdir(save_dir):
             os.makedirs(save_dir)
         model_path = os.path.join(save_dir, model_name)
+        if os.path.isfile(model_path):
+            self.model.load_weights(model_path)
         # may want to change save_best to true
         checkpoint = ModelCheckpoint(
             model_path, monitor='val_acc', verbose=1, save_best_only=False, mode='max')
