@@ -3,10 +3,9 @@ import numpy as np
 
 class Model_SVM:
     
-    def __init__(self, test_size=0.33):
-        with h5py.File("features.h5", "r") as f:
-            self.labels = f["labels"][()]
-            self.features = np.array([i.T.flatten() for i in f["features"]])
+    def __init__(self, labels, features, test_size):
+        self.labels = labels
+        self.features = features
         self.x_train = None
         self.y_train = None
         self.x_test = None

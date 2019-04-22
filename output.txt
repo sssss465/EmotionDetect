@@ -1,0 +1,7 @@
+1:
+    feature: mfcc 13*21 flatten
+    model: svm rbf c=10 gamma=scale
+    100 time avg: 38.15
+
+2:
+    

@@ -41,32 +41,37 @@ def get_dataset_stats():
     print(f"  Labels: total={sum(labels)}, "+", ".join([f"{LABELS[i+1]}={labels[i]}" for i in range(len(labels))]))
     return [mean_length, min_length, max_length], labels
 
-def get_feature_vector(file_name, length):
+def get_feature_vector(file_name, length, n_mfcc, flatten=False):
     audio = librosa.effects.trim(librosa.load(f"datasets/RAVDESS/{file_name}", sr=SR)[0])[0]
     padding = length-len(audio)
     audio = np.concatenate((np.zeros(padding//2), audio, np.zeros(padding-padding//2)))
     assert len(audio) == length
-    feature_vector = np.empty((13, math.ceil(length/HOP_LENGTH)))
-    feature_vector[:13] = librosa.feature.mfcc(y=audio, sr=SR, n_mfcc=13, hop_length=HOP_LENGTH)
+    feature_vector = np.empty((n_mfcc, math.ceil(length/HOP_LENGTH)))
+    feature_vector[:n_mfcc] = librosa.feature.mfcc(y=audio, sr=SR, n_mfcc=n_mfcc, hop_length=HOP_LENGTH)
     '''
     todo: F0, Intensity, Power, etc.
     '''
+    if flatten:
+        return feature_vector.T.flatten()
     return feature_vector
 
-def extract_features():
+def extract_features(n_mfcc, flatten=False):
     with h5py.File("dataset_stats.h5", "r") as stats:
         length = stats['sample_length'][2]
     num_samples = 24*60
     labels = np.empty(num_samples)
     labels_onehot = np.zeros((num_samples, 8))
-    features = np.empty((num_samples, 13, 26))
+    if flatten:
+        features = np.empty((num_samples, n_mfcc*26))
+    else:
+        features = np.empty((num_samples, n_mfcc, 26))
     for actor_idx in range(24):
         for file_idx, file_name in enumerate(list(filter(lambda x: "wav" in x, os.listdir(f"datasets/RAVDESS/Actor_{(actor_idx+1):02d}")))):
             print(f"\rProcessing Actor {(actor_idx+1):02d}/24, File {(file_idx+1):02d}/60", end="")
             labels[actor_idx*60+file_idx] = int(file_name[:-4].split("-")[2])
             labels_onehot[actor_idx*60+file_idx, int(file_name[:-4].split("-")[2])-1] = 1
-            features[actor_idx*60+file_idx] = get_feature_vector(f"Actor_{(actor_idx+1):02d}/{file_name}", length)
-    print("Finish Extracting Features")
+            features[actor_idx*60+file_idx] = get_feature_vector(f"Actor_{(actor_idx+1):02d}/{file_name}", length, n_mfcc, flatten)
+    print("\nFinish Extracting Features")
     return features, labels, labels_onehot
 
 def init():
@@ -79,7 +84,7 @@ def init():
         print("Dataset Statistics Stored to /dataset_stats.h5")
     if "features.h5" not in os.listdir():
         print("Extracting Features")
-        [features, labels, labels_onehot] = extract_features()
+        features, labels, labels_onehot = extract_features(13, True)
         with h5py.File("features.h5", "w") as f:
             f.create_dataset(name="features", data=features)
             f.create_dataset(name="labels", data=labels)
