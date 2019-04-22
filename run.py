@@ -34,5 +34,16 @@ def plot_n_mfcc():
     plt.ylabel("accuracy")
     plt.show()
 
-n_mfcc()
-#plot_n_mfcc()
+def cnn():
+    f = h5py.File("outputs/mfcc_svm.h5", "w")
+    n_mfcc = 13 # change this
+    print(f)
+    features, labels = utils.extract_features(n_mfcc, flatten=True)[:2]
+    print(features.shape(), labels.shape())
+    cnn = model.cnn(labels, features, 0.33)
+
+
+if __name__ == '__main__':
+    # n_mfcc()
+    #plot_n_mfcc()
+    cnn()

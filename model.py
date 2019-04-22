@@ -1,9 +1,15 @@
-import sklearn, h5py
+import sklearn
+import h5py
 import numpy as np
 import tensorflow as tf
+from tensorflow import keras
+import os
+from time import time
+from tensorflow.python.keras.callbacks import TensorBoard, ModelCheckpoint
+
 
 class Model_SVM:
-    
+
     def __init__(self, labels, features, test_size):
         self.labels = labels
         self.features = features
@@ -12,22 +18,86 @@ class Model_SVM:
         self.x_test = None
         self.y_test = None
         self.test_size = test_size
-        self.model = sklearn.svm.SVC(kernel="linear", gamma="scale", C = 10)
+        self.model = sklearn.svm.SVC(kernel="linear", gamma="scale", C=10)
 
     def split_train_test(self):
-        self.x_train, self.x_test, self.y_train, self.y_test = sklearn.model_selection.train_test_split(self.features, self.labels, test_size=self.test_size, random_state=np.random)
+        self.x_train, self.x_test, self.y_train, self.y_test = sklearn.model_selection.train_test_split(
+            self.features, self.labels, test_size=self.test_size, random_state=np.random)
 
     def train(self):
         self.model.fit(self.x_train, self.y_train)
-    
+
     def get_score(self):
         return self.model.score(self.x_test, self.y_test)
 
+
 class cnn:
-    
-    def __init__(self, labels, features, test_size):
+    def __init__(self, labels, features, test_size, num_classes=8, epochs=100,
+                 batch_size=64):  # not sure if ideal // hyperparmeter tuning needed
         self.labels = labels
         self.features = features
         self.test_size = test_size
-    
+        self.x_train = None
+        self.y_train = None
+        self.x_test = None
+        self.y_test = None
+        self.model = None
+        self.num_classes = num_classes
+        self.epochs = epochs
+        self.batch_size = batch_size
+        split_train_test()
+        build_model()
 
+    def split_train_test(self):
+        self.x_train, self.x_test, self.y_train, self.y_test = sklearn.model_selection.train_test_split(
+            self.features, self.labels, test_size=self.test_size, random_state=np.random)
+
+    def build_model(self):
+        layers = keras.layers
+        self.model = keras.Sequential([
+            layers.Conv2D(32, (3, 3), padding='same',
+                          activation=tf.nn.relu, input_shape=self.x_train.shape[1:]),
+            layers.Conv2D(32, (3, 3), activation=tf.nn.relu),
+            layers.MaxPooling2D(pool_size=(2, 2)),
+            layers.Dropout(0.25),
+
+            layers.Conv2D(64, (3, 3), padding='same', activation=tf.nn.relu),
+            layers.Conv2D(64, (3, 3), activation=tf.nn.relu),
+            layers.MaxPooling2D(pool_size=(2, 2)),
+            layers.Dropout(0.25),
+
+            layers.Flatten(),
+            layers.Dense(512, activation='relu'),
+            layers.Dropout(0.5),
+            layers.Dense(num_classes, activation='softmax')
+        ])  # model based off cifar10 dataset, should be deep enough
+        # initiate RMSprop optimizer
+        opt = keras.optimizers.RMSprop(lr=0.0001, decay=1e-6)
+        # Let's train the model using RMSprop
+        self.model.compile(loss='categorical_crossentropy',
+                           optimizer=opt,
+                           metrics=['accuracy'])
+
+    def train(self):
+        # may want to change this
+        save_dir = os.path.join(os.getcwd(), 'saved_models')
+        model_name = 'keras_cnn_trained_model.h5'
+        if not os.path.isdir(save_dir):
+            os.makedirs(save_dir)
+        model_path = os.path.join(save_dir, model_name)
+        # may want to change save_best to true
+        checkpoint = ModelCheckpoint(
+            model_path, monitor='val_acc', verbose=1, save_best_only=False, mode='max')
+        tensorboard = TensorBoard(log_dir="logs/{}".format(time()), write_graph=True,
+                                  write_images=True, histogram_freq=0)
+        model.fit(x_train, y_train,
+                  batch_size=batch_size,
+                  epochs=epochs,
+                  validation_data=(x_test, y_test),
+                  shuffle=True,
+                  callbacks=[tensorboard, checkpoint])
+
+    def evaluate(self):
+        scores = self.model.evaluate(self.x_test, self.y_test, verbose=1)
+        print('Test loss:', scores[0])
+        print('Test accuracy:', scores[1])
