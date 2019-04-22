@@ -32,7 +32,7 @@ class Model_SVM:
 
 
 class cnn:
-    def __init__(self, labels, features, test_size, num_classes=8, epochs=100,
+    def __init__(self, labels, features, test_size, num_classes=8, epochs=500,
                  batch_size=64):  # not sure if ideal // hyperparmeter tuning needed
         self.labels = labels
         self.features = features

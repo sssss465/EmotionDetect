@@ -54,4 +54,6 @@ def cnn():
 if __name__ == '__main__':
     # n_mfcc()
     #plot_n_mfcc()
+    import sys
+    print(sys.version)
     cnn()

@@ -10,7 +10,6 @@
 #SBATCH --partition=aquila
 #SBATCH --gres=gpu:2
 
-module purge
-module load anaconda3/4.0.0
 
+pip install librosa
 python <  run.py
