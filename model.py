@@ -86,8 +86,8 @@ class cnn:
         print("training model")
         # may want to change this
         save_dir = os.path.join(os.getcwd(), 'saved_models')
-        # model_name = 'keras_cnn_trained_model.h5'
-        model_name = 'cnn_trained_model-{epoch:02d}-{val_acc:.2f}.h5'
+        model_name = 'keras_cnn_trained_model.h5'
+        # model_name = 'cnn_trained_model-{epoch:02d}-{val_acc:.2f}.h5'
         if not os.path.isdir(save_dir):
             os.makedirs(save_dir)
         model_path = os.path.join(save_dir, model_name)
