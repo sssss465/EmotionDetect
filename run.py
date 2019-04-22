@@ -38,9 +38,17 @@ def cnn():
     f = h5py.File("outputs/mfcc_svm.h5", "w")
     n_mfcc = 13 # change this
     print(f)
-    features, labels = utils.extract_features(n_mfcc, flatten=True)[:2]
-    print(features.shape(), labels.shape())
+    # features, labels = utils.extract_features(n_mfcc, flatten=False)[:2]
+    with h5py.File("features_unflat.h5", "r") as f:
+        print(f.keys())
+        features = np.array(f["features"])
+        labels = np.array(f["labels_onehot"])
+    print(np.shape(features), np.shape(labels))
     cnn = model.cnn(labels, features, 0.33)
+    cnn.split_train_test()
+    cnn.build_model()
+    cnn.train()
+    cnn.evaluate()
 
 
 if __name__ == '__main__':

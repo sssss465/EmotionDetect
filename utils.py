@@ -84,7 +84,7 @@ def init():
         print("Dataset Statistics Stored to /dataset_stats.h5")
     if "features.h5" not in os.listdir():
         print("Extracting Features")
-        features, labels, labels_onehot = extract_features(13, True)
+        features, labels, labels_onehot = extract_features(13, True) 
         with h5py.File("features.h5", "w") as f:
             f.create_dataset(name="features", data=features)
             f.create_dataset(name="labels", data=labels)
