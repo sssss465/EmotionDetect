@@ -39,7 +39,7 @@ def cnn():
     n_mfcc = 13 # change this
     print(f)
     # features, labels = utils.extract_features(n_mfcc, flatten=False)[:2]
-    with h5py.File("features_unflat.h5", "r") as f:
+    with h5py.File("features_norm.h5", "r") as f:
         print(f.keys())
         features = np.array(f["features"])
         labels = np.array(f["labels_onehot"])

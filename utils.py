@@ -74,7 +74,7 @@ def extract_features(n_mfcc, flatten=False):
     print("\nFinish Extracting Features")
     return features, labels, labels_onehot
 
-def init():
+def init(normalize=True):
     if "dataset_stats.h5" not in os.listdir():
         print("Getting Dataset Statistics")
         length, labels = get_dataset_stats()
@@ -82,14 +82,32 @@ def init():
             f.create_dataset(name="sample_length", data=length)
             f.create_dataset(name="labels", data=labels)
         print("Dataset Statistics Stored to /dataset_stats.h5")
-    if "features.h5" not in os.listdir():
+    fname = "features_norm.h5" if (normalize) else "features.h5"
+    if fname not in os.listdir():
         print("Extracting Features")
-        features, labels, labels_onehot = extract_features(13, True) 
-        with h5py.File("features.h5", "w") as f:
+        features, labels, labels_onehot = extract_features(13, False) # unflat false
+        if (normalize): 
+            # take means INDIVIDUALLY - better for local mfcc
+            # https://www.kaggle.com/c/freesound-audio-tagging/discussion/54082
+            # rshape = np.reshape(features, (features.shape[0], -1))
+            # print("finished reshaping")
+            # print(np.shape(features))
+            mean = np.mean(features, axis=(1,2), keepdims=True) # (n,1,1,1)
+            # print(mean.shape)
+            std = np.std(features, axis=(1,2), keepdims=True)   # (n,1,1,1)
+            # print(std.shape)
+            # mean =  mean[:, np.newaxis, np.newaxis, np.newaxis]
+            # std = std[:, np.newaxis, np.newaxis, np.newaxis]
+            print(np.shape(mean), print(np.shape(std)))
+            # return
+            features = (features - mean) / std 
+            print("normalized features... ", np.shape(features))
+        with h5py.File(fname, "w") as f:
             f.create_dataset(name="features", data=features)
             f.create_dataset(name="labels", data=labels)
             f.create_dataset(name="labels_onehot", data=labels_onehot)
         print("Features Extracted")
         
 if __name__ == '__main__':
-    init()
+    # init(normalize=False)
+    init(normalize=True)
