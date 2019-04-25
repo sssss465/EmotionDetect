@@ -44,7 +44,7 @@ def cnn():
         features = np.array(f["features"])
         labels = np.array(f["labels_onehot"])
     print(np.shape(features), np.shape(labels))
-    cnn = model.cnn(labels, features, 0.33)
+    cnn = model.cnn(labels, features, 0.20)
     cnn.split_train_test()
     cnn.build_model()
     cnn.train()
