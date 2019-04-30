@@ -114,9 +114,10 @@ class cnn:
 
         from sklearn.metrics import classification_report
         predictions = self.model.predict_classes(self.x_test)
-        report = classification_report(self.y_test, predictions)
+        y_new = np.argmax(self.y_test, axis=1)
+        report = classification_report(y_new, predictions)
         print(report)
 
         from sklearn.metrics import confusion_matrix
-        matrix = confusion_matrix(self.y_test, predictions)
+        matrix = confusion_matrix(y_new, predictions)
         print (matrix)
