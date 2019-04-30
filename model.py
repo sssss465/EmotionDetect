@@ -62,12 +62,14 @@ class cnn:
                           activation=tf.nn.relu, input_shape=self.x_train.shape[1:]),
             layers.Conv2D(32, (3, 3), activation=tf.nn.relu),
             layers.MaxPooling2D(pool_size=(2, 2)),
-            layers.Dropout(0.25),
+            # layers.Dropout(0.25),
+            layers.BatchNormalization(),
 
             layers.Conv2D(64, (3, 3), padding='same', activation=tf.nn.relu),
             layers.Conv2D(64, (3, 3), activation=tf.nn.relu),
             layers.MaxPooling2D(pool_size=(2, 2)),
-            layers.Dropout(0.25),
+            # layers.Dropout(0.25),
+            layers.BatchNormalization(),
 
             layers.Flatten(),
             layers.Dense(512, activation='relu'),
