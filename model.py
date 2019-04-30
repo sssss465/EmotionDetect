@@ -115,6 +115,7 @@ class cnn:
         from sklearn.metrics import classification_report
         predictions = self.model.predict_classes(self.x_test)
         y_new = np.argmax(self.y_test, axis=1)
+        print(np.shape(predictions), np.shape(y_new))
         report = classification_report(y_new, predictions)
         print(report)
 
