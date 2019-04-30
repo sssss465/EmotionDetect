@@ -58,7 +58,7 @@ class cnn:
         # self.y_train = keras.utils.to_categorical(self.y_train, self.num_classes)
         # self.y_test = keras.utils.to_categorical(self.y_test, self.num_classes) 
         self.model = keras.Sequential([
-            layers.Conv2d(32, (3, 3), padding='same',
+            layers.Conv2D(32, (3, 3), padding='same',
                           activation=tf.nn.relu, input_shape=self.x_train.shape[1:]),
             layers.Conv2D(32, (3, 3), activation=tf.nn.relu),
             layers.MaxPooling2D(pool_size=(2, 2)),
