@@ -110,4 +110,5 @@ def init(normalize=True):
         
 if __name__ == '__main__':
     # init(normalize=False)
-    init(normalize=True)
+    #init(normalize=True)
+    get_dataset_stats()

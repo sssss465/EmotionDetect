@@ -6,6 +6,9 @@ from tensorflow import keras
 import os
 from time import time
 from tensorflow.python.keras.callbacks import TensorBoard, ModelCheckpoint
+import pandas as pd 
+import matplotlib.pyplot as plt
+import seaborn as sb
 
 
 class Model_SVM:
@@ -83,6 +86,7 @@ class cnn:
                            optimizer=opt,
                            metrics=['accuracy'])
         print("built cnn model..")
+        print(self.model.summary())
 
     def train(self):
         print("training model")
