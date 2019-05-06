@@ -57,4 +57,4 @@ if __name__ == '__main__':
     #plot_n_mfcc()
     import sys
     print(sys.version)
-    cnn()
+    cnn(50)
