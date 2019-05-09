@@ -41,6 +41,36 @@ def get_dataset_stats():
     print(f"  Labels: total={sum(labels)}, "+", ".join([f"{LABELS[i+1]}={labels[i]}" for i in range(len(labels))]))
     return [mean_length, min_length, max_length], labels
 
+
+def get_stats_tess():
+    import time
+    path = 'datasets/TESS'
+    lst = []
+    start_time = time.time()
+
+    for subdir, dirs, files in os.walk(path):
+        for file in files:
+            try:
+                #Load librosa array, obtain mfcss, store the file and the mcss information in a new array
+                print(os.path.join(subdir, file))
+                X, sample_rate = librosa.load(os.path.join(subdir, file), res_type='kaiser_fast')
+                mfccs = np.mean(librosa.feature.mfcc(
+                    y=X, sr=sample_rate, n_mfcc=40).T, axis=0)
+                print(np.shape(mfccs))
+                # The instruction below converts the labels (from 1 to 8) to a series from 0 to 7
+                # This is because our predictor needs to start from 0 otherwise it will try to predict also 0.
+                file = int(subdir[:-1]) - 1
+                arr = mfccs, file
+                lst.append(arr)
+            # If the file is not valid, skip it
+            except ValueError:
+                continue
+    print("--- Data loaded. Loading time: %s seconds ---" % (time.time() - start_time))
+    print(np.shape(lst))
+    X, y = zip(*lst)
+    print(np.shape(X), np.shape(y))
+    return np.asarray(X), np.asarray(y)
+
 def get_feature_vector(file_name, length, n_mfcc, flatten=False):
     audio = librosa.effects.trim(librosa.load(f"datasets/RAVDESS/{file_name}", sr=SR)[0])[0]
     padding = length-len(audio)
@@ -111,4 +141,5 @@ def init(normalize=True):
 if __name__ == '__main__':
     # init(normalize=False)
     #init(normalize=True)
-    get_dataset_stats()
+    # get_dataset_stats()
+    get_stats_tess()
