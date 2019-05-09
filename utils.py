@@ -44,31 +44,35 @@ def get_dataset_stats():
 
 def get_stats_tess():
     import time
-    path = 'datasets/TESS'
+    path = ['datasets/TESS', 'datasets/RAVDESS']
     lst = []
     start_time = time.time()
 
-    for subdir, dirs, files in os.walk(path):
-        for file in files:
-            try:
-                #Load librosa array, obtain mfcss, store the file and the mcss information in a new array
-                print(os.path.join(subdir, file))
-                X, sample_rate = librosa.load(os.path.join(subdir, file), res_type='kaiser_fast')
-                mfccs = np.mean(librosa.feature.mfcc(
-                    y=X, sr=sample_rate, n_mfcc=40).T, axis=0)
-                print(np.shape(mfccs))
-                # The instruction below converts the labels (from 1 to 8) to a series from 0 to 7
-                # This is because our predictor needs to start from 0 otherwise it will try to predict also 0.
-                file = int(subdir[:-1]) - 1
-                arr = mfccs, file
-                lst.append(arr)
-            # If the file is not valid, skip it
-            except ValueError:
-                continue
+    for p in path:
+        for subdir, dirs, files in os.walk(p):
+            for file in files:
+                try:
+                    #Load librosa array, obtain mfcss, store the file and the mcss information in a new array
+                    print(os.path.join(subdir, file))
+                    X, sample_rate = librosa.load(os.path.join(subdir, file), res_type='kaiser_fast')
+                    mfccs = np.mean(librosa.feature.mfcc(
+                        y=X, sr=sample_rate, n_mfcc=40).T, axis=0)
+                    # print(np.shape(mfccs))
+                    # The instruction below converts the labels (from 1 to 8) to a series from 0 to 7
+                    # This is because our predictor needs to start from 0 otherwise it will try to predict also 0.
+                    file = int(subdir[-1:]) - 1
+                    arr = mfccs, file
+                    lst.append(arr)
+                # If the file is not valid, skip it
+                except ValueError:
+                    continue
     print("--- Data loaded. Loading time: %s seconds ---" % (time.time() - start_time))
     print(np.shape(lst))
     X, y = zip(*lst)
     print(np.shape(X), np.shape(y))
+    with h5py.File('tess_features', 'w') as tess:
+        tess.create_dataset(name='features', data=X)
+        tess.create_dataset(name='labels', data=y)
     return np.asarray(X), np.asarray(y)
 
 def get_feature_vector(file_name, length, n_mfcc, flatten=False):

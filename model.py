@@ -36,7 +36,7 @@ class Model_SVM:
 
 class cnn:
     def __init__(self, labels, features, test_size, num_classes=8, epochs=500,
-                 batch_size=64):  # not sure if ideal // hyperparmeter tuning needed
+                 batch_size=32):  # not sure if ideal // hyperparmeter tuning needed
         self.labels = labels
         self.features = features
         self.test_size = test_size
@@ -53,13 +53,14 @@ class cnn:
         self.x_train, self.x_test, self.y_train, self.y_test = sklearn.model_selection.train_test_split(
             self.features, self.labels, test_size=self.test_size, random_state=np.random)
 
-    def build_model(self):
+    def build_model(self, one_hot=True):
         layers = keras.layers
         # we need to transform x and turn y into one hot
         self.x_train = self.x_train[..., np.newaxis] # add new dimension
         self.x_test = self.x_test[..., np.newaxis] 
-        # self.y_train = keras.utils.to_categorical(self.y_train, self.num_classes)
-        # self.y_test = keras.utils.to_categorical(self.y_test, self.num_classes) 
+        if not one_hot:
+            self.y_train = keras.utils.to_categorical(self.y_train, self.num_classes)
+            self.y_test = keras.utils.to_categorical(self.y_test, self.num_classes) 
         self.model = keras.Sequential([
             layers.Conv2D(32, (3, 3), padding='same',
                           activation=tf.nn.relu, input_shape=self.x_train.shape[1:]),

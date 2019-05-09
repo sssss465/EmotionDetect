@@ -1,6 +1,7 @@
 import utils, model, sklearn, h5py
 import numpy as np
 import matplotlib.pyplot as plt
+from tensorflow import keras
 
 scores = []
 scores_mfcc = []
@@ -43,7 +44,25 @@ def cnn(n_mfcc = 13):
             features = np.array(f["features"])
             labels = np.array(f["labels_onehot"])
     else:
-         features, _, labels = utils.extract_features(n_mfcc, flatten=False)
+        # features, _, labels = utils.extract_features(n_mfcc, flatten=False)
+        # features = np.mean(features.T, axis=0).T
+        # with h5py.File('ravdess_40_mfcc', 'w') as f:
+        #     f.create_dataset('features', data=features)
+        #     f.create_dataset('labels', data=labels)
+        with h5py.File('ravdess_40_mfcc', 'r') as f:
+            features = f['features'][:]
+            labels = f['labels'][:]
+        print(np.shape(features), np.shape(labels))
+        with h5py.File("tess_features", "r") as f:
+            f2 = np.array(f['features'])
+            l2 = np.array(f['labels'])
+            l2 = keras.utils.to_categorical(l2, num_classes=8)
+            print(np.shape(f2), np.shape(l2))
+   
+    features = np.concatenate((features, f2), axis=0)
+    labels = np.concatenate((labels, l2), axis=0)
+    features = np.concatenate((features, np.zeros((features.shape[0],400))), axis=1)
+    features = np.reshape(features, (features.shape[0], 40, -1))
     print(np.shape(features), np.shape(labels))
     cnn = model.cnn(labels, features, 0.20)
     cnn.split_train_test()
@@ -57,4 +76,4 @@ if __name__ == '__main__':
     #plot_n_mfcc()
     import sys
     print(sys.version)
-    cnn(50)
+    cnn(40)
