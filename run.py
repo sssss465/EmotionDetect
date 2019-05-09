@@ -63,6 +63,9 @@ def cnn(n_mfcc = 13):
     labels = np.concatenate((labels, l2), axis=0)
     features = np.concatenate((features, np.zeros((features.shape[0],400))), axis=1)
     features = np.reshape(features, (features.shape[0], 40, -1))
+    # feature augmentation
+    features = np.concatenate((features, np.flip(features, axis=1)),axis=0)
+    labels = np.concatenate((labels, labels), axis=0)
     print(np.shape(features), np.shape(labels))
     cnn = model.cnn(labels, features, 0.20)
     cnn.split_train_test()
