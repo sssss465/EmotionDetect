@@ -1,6 +1,8 @@
 # NYUSH Senior Thesis
 ## Human Vocal Sentiment Analysis
 
+Paper: https://arxiv.org/abs/1905.08632
+
 Make directory datasets and put datasets there for any referencing code
 
 Schedule:
